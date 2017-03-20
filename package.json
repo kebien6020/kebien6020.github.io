@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo run npm start and go to /test.html",
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack -w",
     "webpack": "webpack",
     "build": "webpack"

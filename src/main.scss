@@ -1,21 +1,52 @@
+@import 'mixins';
+@import 'colors';
+@import url('https://fonts.googleapis.com/css?family=Roboto|Lato');
 html.main {
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
 
-  body {
-    font-size: 22px;
-    font-family: "Open Sans", sans-serif;
-  }
 
-  h1.hello {
-    font-size: 2em;
-    position: relative;
-    top: calc(50vh - 1em);
-    text-align: center;
-    font-weight: 100;
-    color: rgba(0,0,0,0.7);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 22px;
+  font-family: 'Lato', sans-serif;
+}
+
+nav {
+  @include clearfix;
+  padding: 0.5em;
+  background-color: $theme-blue;
+  h1 {
+    float: left;
+    color: white;
+    font-size: 44px;
   }
+  .navlinks {
+    float: right;
+    a {
+      float: left;
+      display: block;
+      padding: 0.3em;
+      margin: 10px 0.2em;
+      color: white;
+      text-decoration: none;
+      &:hover {
+        border-bottom: 3px solid white;
+        margin-bottom: -3px;
+      }
+    }
+  }
+}
+
+#projects {
+  
+}
+
+#about p {
+  font-family: 'Ubuntu', sans-serif;
+}
+
 }

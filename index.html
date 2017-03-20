@@ -6,7 +6,84 @@
   <title></title>
 </head>
 <body>
-  <h1 class="hello">Hello! Check out the console to see if the script is working.</h1>
+
+<nav>
+  <h1>Kevin Peña</h1>
+  <div class="navlinks">
+    <a href="#projects">Projects</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<section id="projects">
+  <h2>My Projects</h2>
+  <p>Here are some of the projects I've done.</p>
+  <div class="project-blocks">
+    <div class="project">
+      <h3>Wikipedia Viewer</h3>
+      <a href="../wikipedia-viewer">
+        <img src="" alt="thumbnail">
+        <div class="project-description">
+          A simple Wikipedia search utility.
+        </div>
+      </a>
+    </div>
+    <div class="project">
+      <h3>Random Quote Machine</h3>
+      <a href="../quote-machine">
+        <img src="" alt="Thumbnail">
+        <div class="project-description">
+          A quote generator hitting the quotesondesign.com API. It shows a random quote about design.
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <h2>About Me</h2>
+  <p>
+    I am a developer currently doing the FreeCodeCamp course. I'm passionate about programming and try to make all of my projects as user friendly as I possibly can. I always make a note on seeing the project I'm working on with as much criticism as the ones I use on a daily basis.
+  </p>
+  <img src="" alt="Kevin's picture">
+</section>
+
+<section id="contact">
+  <h2>Reach to me</h2>
+  <div class="email-form">
+    <h3>Send me an email...</h3>
+    <p>
+      You can send me an email to <a href="mailto:kevin.pena.prog@gmail.com">kevin.pena.prog@gmail.com</a> or use the following form.
+    </p>
+    <form action="mailto:kevin.pena.prog@gmail.com" method="post">
+      <div class="form-item">
+        <label for="name">Name</label>
+        <input type="text" name="name" placeholder="So I can talk to you by your name">
+      </div>
+      <div class="form-item">
+        <label for="email">E-mail</label>
+        <input type="text" name="email" placeholder="I will reply to you at this address">
+      </div>
+      <div class="form-item">
+        <label for="number">Phone Number</label>
+        <input type="text" name="number" placeholder="Optional">
+      </div>
+      <div class="form-item">
+        <label for="message">Message</label>
+        <textarea name="message" placeholder="Your actual message goes here"></textarea>
+      </div>
+    </form>
+  </div>
+  <div class="social-media">
+    <h3>...or find me in the social media</h3>
+    <div class="social-links">
+      <a href="#" class="facebook"></a>
+      <a href="#" class="twitter"></a>
+    </div>
+  </div>
+</section>
+
 
 <script src="js/index.js" charset="utf-8"></script>
 </body>
