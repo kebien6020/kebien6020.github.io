@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "/js/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 47);
+/******/ 	return __webpack_require__(__webpack_require__.s = 48);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -181,9 +181,9 @@ module.exports = {
 
 
 
-var base64 = __webpack_require__(5)
-var ieee754 = __webpack_require__(9)
-var isArray = __webpack_require__(10)
+var base64 = __webpack_require__(6)
+var ieee754 = __webpack_require__(10)
+var isArray = __webpack_require__(11)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -1961,19 +1961,316 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
+/*
+ * smoothscroll polyfill - v0.3.4
+ * https://iamdustan.github.io/smoothscroll
+ * 2016 (c) Dustan Kasten, Jeremias Menichelli - MIT License
+ */
+
+(function(w, d, undefined) {
+  'use strict';
+
+  /*
+   * aliases
+   * w: window global object
+   * d: document
+   * undefined: undefined
+   */
+
+  // polyfill
+  function polyfill() {
+    // return when scrollBehavior interface is supported
+    if ('scrollBehavior' in d.documentElement.style) {
+      return;
+    }
+
+    /*
+     * globals
+     */
+    var Element = w.HTMLElement || w.Element;
+    var SCROLL_TIME = 468;
+
+    /*
+     * object gathering original scroll methods
+     */
+    var original = {
+      scroll: w.scroll || w.scrollTo,
+      scrollBy: w.scrollBy,
+      scrollIntoView: Element.prototype.scrollIntoView
+    };
+
+    /*
+     * define timing method
+     */
+    var now = w.performance && w.performance.now
+      ? w.performance.now.bind(w.performance) : Date.now;
+
+    /**
+     * changes scroll position inside an element
+     * @method scrollElement
+     * @param {Number} x
+     * @param {Number} y
+     */
+    function scrollElement(x, y) {
+      this.scrollLeft = x;
+      this.scrollTop = y;
+    }
+
+    /**
+     * returns result of applying ease math function to a number
+     * @method ease
+     * @param {Number} k
+     * @returns {Number}
+     */
+    function ease(k) {
+      return 0.5 * (1 - Math.cos(Math.PI * k));
+    }
+
+    /**
+     * indicates if a smooth behavior should be applied
+     * @method shouldBailOut
+     * @param {Number|Object} x
+     * @returns {Boolean}
+     */
+    function shouldBailOut(x) {
+      if (typeof x !== 'object'
+            || x === null
+            || x.behavior === undefined
+            || x.behavior === 'auto'
+            || x.behavior === 'instant') {
+        // first arg not an object/null
+        // or behavior is auto, instant or undefined
+        return true;
+      }
+
+      if (typeof x === 'object'
+            && x.behavior === 'smooth') {
+        // first argument is an object and behavior is smooth
+        return false;
+      }
+
+      // throw error when behavior is not supported
+      throw new TypeError('behavior not valid');
+    }
+
+    /**
+     * finds scrollable parent of an element
+     * @method findScrollableParent
+     * @param {Node} el
+     * @returns {Node} el
+     */
+    function findScrollableParent(el) {
+      var isBody;
+      var hasScrollableSpace;
+      var hasVisibleOverflow;
+
+      do {
+        el = el.parentNode;
+
+        // set condition variables
+        isBody = el === d.body;
+        hasScrollableSpace =
+          el.clientHeight < el.scrollHeight ||
+          el.clientWidth < el.scrollWidth;
+        hasVisibleOverflow =
+          w.getComputedStyle(el, null).overflow === 'visible';
+      } while (!isBody && !(hasScrollableSpace && !hasVisibleOverflow));
+
+      isBody = hasScrollableSpace = hasVisibleOverflow = null;
+
+      return el;
+    }
+
+    /**
+     * self invoked function that, given a context, steps through scrolling
+     * @method step
+     * @param {Object} context
+     */
+    function step(context) {
+      // call method again on next available frame
+      context.frame = w.requestAnimationFrame(step.bind(w, context));
+
+      var time = now();
+      var value;
+      var currentX;
+      var currentY;
+      var elapsed = (time - context.startTime) / SCROLL_TIME;
+
+      // avoid elapsed times higher than one
+      elapsed = elapsed > 1 ? 1 : elapsed;
+
+      // apply easing to elapsed time
+      value = ease(elapsed);
+
+      currentX = context.startX + (context.x - context.startX) * value;
+      currentY = context.startY + (context.y - context.startY) * value;
+
+      context.method.call(context.scrollable, currentX, currentY);
+
+      // return when end points have been reached
+      if (currentX === context.x && currentY === context.y) {
+        w.cancelAnimationFrame(context.frame);
+        return;
+      }
+    }
+
+    /**
+     * scrolls window with a smooth behavior
+     * @method smoothScroll
+     * @param {Object|Node} el
+     * @param {Number} x
+     * @param {Number} y
+     */
+    function smoothScroll(el, x, y) {
+      var scrollable;
+      var startX;
+      var startY;
+      var method;
+      var startTime = now();
+      var frame;
+
+      // define scroll context
+      if (el === d.body) {
+        scrollable = w;
+        startX = w.scrollX || w.pageXOffset;
+        startY = w.scrollY || w.pageYOffset;
+        method = original.scroll;
+      } else {
+        scrollable = el;
+        startX = el.scrollLeft;
+        startY = el.scrollTop;
+        method = scrollElement;
+      }
+
+      // cancel frame when a scroll event's happening
+      if (frame) {
+        w.cancelAnimationFrame(frame);
+      }
+
+      // scroll looping over a frame
+      step({
+        scrollable: scrollable,
+        method: method,
+        startTime: startTime,
+        startX: startX,
+        startY: startY,
+        x: x,
+        y: y,
+        frame: frame
+      });
+    }
+
+    /*
+     * ORIGINAL METHODS OVERRIDES
+     */
+
+    // w.scroll and w.scrollTo
+    w.scroll = w.scrollTo = function() {
+      // avoid smooth behavior if not required
+      if (shouldBailOut(arguments[0])) {
+        original.scroll.call(
+          w,
+          arguments[0].left || arguments[0],
+          arguments[0].top || arguments[1]
+        );
+        return;
+      }
+
+      // LET THE SMOOTHNESS BEGIN!
+      smoothScroll.call(
+        w,
+        d.body,
+        ~~arguments[0].left,
+        ~~arguments[0].top
+      );
+    };
+
+    // w.scrollBy
+    w.scrollBy = function() {
+      // avoid smooth behavior if not required
+      if (shouldBailOut(arguments[0])) {
+        original.scrollBy.call(
+          w,
+          arguments[0].left || arguments[0],
+          arguments[0].top || arguments[1]
+        );
+        return;
+      }
+
+      // LET THE SMOOTHNESS BEGIN!
+      smoothScroll.call(
+        w,
+        d.body,
+        ~~arguments[0].left + (w.scrollX || w.pageXOffset),
+        ~~arguments[0].top + (w.scrollY || w.pageYOffset)
+      );
+    };
+
+    // Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function() {
+      // avoid smooth behavior if not required
+      if (shouldBailOut(arguments[0])) {
+        original.scrollIntoView.call(this, arguments[0] || true);
+        return;
+      }
+
+      // LET THE SMOOTHNESS BEGIN!
+      var scrollableParent = findScrollableParent(this);
+      var parentRects = scrollableParent.getBoundingClientRect();
+      var clientRects = this.getBoundingClientRect();
+
+      if (scrollableParent !== d.body) {
+        // reveal element inside parent
+        smoothScroll.call(
+          this,
+          scrollableParent,
+          scrollableParent.scrollLeft + clientRects.left - parentRects.left,
+          scrollableParent.scrollTop + clientRects.top - parentRects.top
+        );
+        // reveal parent in viewport
+        w.scrollBy({
+          left: parentRects.left,
+          top: parentRects.top,
+          behavior: 'smooth'
+        });
+      } else {
+        // reveal element in viewport
+        w.scrollBy({
+          left: clientRects.left,
+          top: clientRects.top,
+          behavior: 'smooth'
+        });
+      }
+    };
+  }
+
+  if (true) {
+    // commonjs
+    module.exports = { polyfill: polyfill };
+  } else {
+    // global
+    polyfill();
+  }
+})(window, document);
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(7);
+var content = __webpack_require__(8);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(11)(content, {});
+var update = __webpack_require__(12)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -1990,26 +2287,39 @@ if(false) {
 }
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__main_scss__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__main_scss__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__main_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__main_scss__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill__);
 
 
-// Smooth scrolling
-const $anchors = [document.getElementById('projects'), document.getElementById('about'), document.getElementById('contact')];
+__WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill___default.a.polyfill();
 
-$anchors.forEach($anchor => {
-  $anchor.scrollIntoView({
-    behavior: 'smooth'
+// # Smooth scrolling
+
+const $navlinks = document.querySelectorAll('.navlinks a');
+const getHash = url => url.match(/#(.*)$/)[1];
+
+// Override the onclick for each navlink
+$navlinks.forEach($navlink => {
+  $navlink.addEventListener('click', event => {
+    // Prevent the default instant scroll
+    event.preventDefault();
+    const targetId = getHash($navlink.href);
+    // Get the intended target
+    const $target = document.getElementById(targetId);
+    // Scroll smoothly
+    $target.scrollIntoView({ behavior: 'smooth' });
   });
 });
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2130,15 +2440,15 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // This is (almost) directly from Node.js utils
 // https://github.com/joyent/node/blob/f8c335d0caf47f16d31413f89aa28eda3878e3aa/lib/util.js
 
-var getName = __webpack_require__(17);
-var getProperties = __webpack_require__(36);
-var getEnumerableProperties = __webpack_require__(33);
+var getName = __webpack_require__(18);
+var getProperties = __webpack_require__(37);
+var getEnumerableProperties = __webpack_require__(34);
 
 module.exports = inspect;
 
@@ -2471,22 +2781,22 @@ function objectToString(o) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(8)(undefined);
+exports = module.exports = __webpack_require__(9)(undefined);
 // imports
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto|Lato);", ""]);
 exports.push([module.i, "@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css);", ""]);
 
 // module
-exports.push([module.i, "html.main * {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box; }\n\nhtml.main body {\n  font-size: 22px;\n  font-family: 'Lato', sans-serif; }\n\nhtml.main nav {\n  padding: 0.5em;\n  background-color: #3077e8;\n  position: fixed;\n  width: 100%;\n  z-index: 9; }\n  html.main nav:after {\n    content: \"\";\n    display: table;\n    clear: both; }\n  html.main nav h1 {\n    text-align: center;\n    color: white;\n    font-size: 44px; }\n  html.main nav .navlinks {\n    display: flex; }\n    html.main nav .navlinks a {\n      flex: 1;\n      justify-content: center;\n      text-align: center;\n      float: left;\n      display: block;\n      padding: 0.3em;\n      color: white;\n      text-decoration: none; }\n      html.main nav .navlinks a:first-child {\n        padding-left: 0; }\n      html.main nav .navlinks a:hover {\n        border-bottom: 3px solid white;\n        margin-bottom: -3px; }\n\nhtml.main .anchor {\n  display: block;\n  position: relative;\n  top: -133px;\n  visibility: hidden; }\n\nhtml.main main {\n  padding-top: 111px; }\n\nhtml.main section > * {\n  width: 90%;\n  margin-left: auto;\n  margin-right: auto; }\n\nhtml.main section {\n  padding-top: 1em;\n  padding-bottom: 1em; }\n  html.main section h2 {\n    text-align: center;\n    padding-bottom: 0.7em; }\n\nhtml.main #projects-container {\n  background-color: #d1e1fa; }\n  html.main #projects-container .project-blocks {\n    padding-top: 1em; }\n    html.main #projects-container .project-blocks:after {\n      content: \"\";\n      display: table;\n      clear: both; }\n  html.main #projects-container .project {\n    margin-left: auto;\n    margin-right: auto;\n    width: 80%; }\n    @media (min-width: 480px) {\n      html.main #projects-container .project {\n        float: left;\n        width: 48%;\n        margin-right: 2%; }\n        html.main #projects-container .project .img-container {\n          min-height: 130px;\n          background-color: white; }\n        html.main #projects-container .project h3 {\n          min-height: 2.5em; } }\n    html.main #projects-container .project h3 {\n      text-align: center; }\n    html.main #projects-container .project a {\n      display: block;\n      text-align: left;\n      color: inherit;\n      text-decoration: none; }\n    html.main #projects-container .project .img-container {\n      position: relative; }\n      html.main #projects-container .project .img-container img {\n        width: 100%;\n        border-radius: 5px; }\n      html.main #projects-container .project .img-container .overlay {\n        display: block;\n        position: absolute;\n        top: 0;\n        width: 100%;\n        height: 100%;\n        border-radius: 5px;\n        box-shadow: inset 2px 2px 15px 0 #000000; }\n        html.main #projects-container .project .img-container .overlay .live {\n          display: none;\n          margin: 0 auto;\n          position: absolute;\n          top: 50%;\n          left: 50%;\n          transform: translateX(-50%) translateY(-50%); }\n        html.main #projects-container .project .img-container .overlay:hover {\n          background-color: rgba(0, 0, 0, 0.3); }\n          html.main #projects-container .project .img-container .overlay:hover .live {\n            display: block; }\n\nhtml.main #about-container {\n  background-color: #1249a0;\n  color: white; }\n  html.main #about-container p {\n    font-family: 'Ubuntu', sans-serif; }\n    html.main #about-container p:not(:last-child) {\n      margin-bottom: 1em; }\n  html.main #about-container hr {\n    border-bottom-width: 3px;\n    border-top: none;\n    margin-top: 1em;\n    margin-bottom: 1em;\n    width: 50%; }\n  html.main #about-container img {\n    border-radius: 50%;\n    width: 60%;\n    display: block;\n    margin-left: auto;\n    margin-right: auto; }\n    @media (min-width: 480px) {\n      html.main #about-container img {\n        width: 40%; } }\n  @media (min-width: 800px) {\n    html.main #about-container {\n      position: relative; }\n      html.main #about-container:after {\n        content: \"\";\n        display: table;\n        clear: both; }\n      html.main #about-container .text {\n        float: left;\n        width: 45%;\n        margin-left: 5%; }\n      html.main #about-container hr {\n        display: inline-block;\n        width: 1px;\n        height: 300px;\n        margin: 0;\n        margin-left: 2.5%; }\n      html.main #about-container img {\n        height: 70%;\n        width: auto;\n        position: absolute;\n        top: 50%;\n        right: 22.5%;\n        transform: translateY(-50%) translateX(50%); } }\n\nhtml.main #contact-container p {\n  margin-top: 1em;\n  margin-bottom: 1em; }\n  html.main #contact-container p a {\n    text-decoration: none;\n    color: inherit;\n    font-weight: bold; }\n    html.main #contact-container p a:hover {\n      color: #3077e8; }\n\nhtml.main #contact-container form .form-item {\n  margin-bottom: 0.7em; }\n\nhtml.main #contact-container form label {\n  font-weight: bold;\n  font-size: 0.8em; }\n\nhtml.main #contact-container form label, html.main #contact-container form input, html.main #contact-container form textarea {\n  width: 100%; }\n\nhtml.main #contact-container form input, html.main #contact-container form textarea, html.main #contact-container form button {\n  border: none;\n  outline: none;\n  font-family: inherit;\n  font-size: 22px; }\n\nhtml.main #contact-container form input, html.main #contact-container form textarea {\n  border-bottom: 2px solid lightgray; }\n\nhtml.main #contact-container form button {\n  display: block;\n  width: 100%;\n  background-color: #3077e8;\n  color: white;\n  cursor: pointer;\n  padding: 0.8em; }\n  @media (min-width: 480px) {\n    html.main #contact-container form button {\n      width: 50%;\n      margin-left: auto;\n      margin-right: auto; } }\n  html.main #contact-container form button:hover {\n    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n    transition: background-color .25s,color .15s,box-shadow .15s,opacity .25s,filter .25s,border .15s; }\n\nhtml.main #contact-container form input {\n  line-height: 2; }\n\nhtml.main #contact-container form textarea {\n  height: 5em; }\n\nhtml.main #contact-container .social-links {\n  padding-top: 1em; }\n  html.main #contact-container .social-links a {\n    color: inherit;\n    text-decoration: none;\n    display: block;\n    margin-bottom: 0.3em; }\n    html.main #contact-container .social-links a .fa-facebook-official {\n      color: #3b5998; }\n    html.main #contact-container .social-links a .fa-twitter {\n      color: #4099ff; }\n\n@media (min-width: 800px) {\n  html.main #contact-container .email-form {\n    float: left;\n    margin-left: 5%;\n    width: 43%; }\n  html.main #contact-container .social-media {\n    float: right;\n    margin-right: 5%;\n    width: 43%; }\n    html.main #contact-container .social-media .social-links {\n      padding-left: 2em; } }\n", ""]);
+exports.push([module.i, "html.main * {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box; }\n\nhtml.main body {\n  font-size: 22px;\n  font-family: 'Lato', sans-serif; }\n\nhtml.main nav {\n  padding: 0.5em;\n  background-color: #3077e8;\n  position: fixed;\n  width: 100%;\n  z-index: 9; }\n  html.main nav:after {\n    content: \"\";\n    display: table;\n    clear: both; }\n  html.main nav h1 {\n    text-align: center;\n    color: white;\n    font-size: 44px; }\n  html.main nav .navlinks {\n    display: flex; }\n    html.main nav .navlinks a {\n      flex: 1;\n      justify-content: center;\n      text-align: center;\n      float: left;\n      display: block;\n      padding: 0.3em;\n      color: white;\n      text-decoration: none; }\n      html.main nav .navlinks a:first-child {\n        padding-left: 0; }\n      html.main nav .navlinks a:hover {\n        border-bottom: 3px solid white;\n        margin-bottom: -3px; }\n\nhtml.main .anchor {\n  display: block;\n  position: relative;\n  top: -133px;\n  visibility: hidden; }\n\nhtml.main main {\n  padding-top: 111px; }\n\nhtml.main section > * {\n  width: 90%;\n  margin-left: auto;\n  margin-right: auto; }\n\nhtml.main section {\n  padding-top: 1em;\n  padding-bottom: 1em; }\n  html.main section h2 {\n    text-align: center;\n    padding-bottom: 0.7em; }\n\nhtml.main #projects-container .project-blocks {\n  padding-top: 1em; }\n  html.main #projects-container .project-blocks:after {\n    content: \"\";\n    display: table;\n    clear: both; }\n\nhtml.main #projects-container .project {\n  margin-left: auto;\n  margin-right: auto;\n  width: 80%; }\n  @media (min-width: 480px) {\n    html.main #projects-container .project {\n      float: left;\n      width: 48%;\n      margin-right: 2%; }\n      html.main #projects-container .project .img-container {\n        min-height: 130px;\n        background-color: white; }\n      html.main #projects-container .project h3 {\n        min-height: 2.5em; } }\n  html.main #projects-container .project h3 {\n    text-align: center; }\n  html.main #projects-container .project a {\n    display: block;\n    text-align: left;\n    color: inherit;\n    text-decoration: none; }\n  html.main #projects-container .project .img-container {\n    position: relative; }\n    html.main #projects-container .project .img-container img {\n      width: 100%;\n      border-radius: 5px; }\n    html.main #projects-container .project .img-container .overlay {\n      display: block;\n      position: absolute;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      border-radius: 5px;\n      box-shadow: inset 2px 2px 15px 0 #000000; }\n      html.main #projects-container .project .img-container .overlay .live {\n        display: none;\n        margin: 0 auto;\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        transform: translateX(-50%) translateY(-50%); }\n      html.main #projects-container .project .img-container .overlay:hover {\n        background-color: rgba(0, 0, 0, 0.3); }\n        html.main #projects-container .project .img-container .overlay:hover .live {\n          display: block; }\n\nhtml.main #about-container {\n  background-color: #1249a0;\n  color: white; }\n  html.main #about-container p {\n    font-family: 'Ubuntu', sans-serif; }\n    html.main #about-container p:not(:last-child) {\n      margin-bottom: 1em; }\n  html.main #about-container hr {\n    border-bottom-width: 3px;\n    border-top: none;\n    margin-top: 1em;\n    margin-bottom: 1em;\n    width: 50%; }\n  html.main #about-container img {\n    border-radius: 50%;\n    width: 60%;\n    display: block;\n    margin-left: auto;\n    margin-right: auto; }\n    @media (min-width: 480px) {\n      html.main #about-container img {\n        width: 40%; } }\n  @media (min-width: 800px) {\n    html.main #about-container {\n      position: relative; }\n      html.main #about-container:after {\n        content: \"\";\n        display: table;\n        clear: both; }\n      html.main #about-container .text {\n        float: left;\n        width: 45%;\n        margin-left: 5%; }\n      html.main #about-container hr {\n        display: inline-block;\n        width: 1px;\n        height: 300px;\n        margin: 0;\n        margin-left: 2.5%; }\n      html.main #about-container img {\n        height: 70%;\n        width: auto;\n        position: absolute;\n        top: 50%;\n        right: 22.5%;\n        transform: translateY(-50%) translateX(50%); } }\n\nhtml.main #contact-container p {\n  margin-top: 1em;\n  margin-bottom: 1em; }\n  html.main #contact-container p a {\n    text-decoration: none;\n    color: inherit;\n    font-weight: bold; }\n    html.main #contact-container p a:hover {\n      color: #3077e8; }\n\nhtml.main #contact-container form .form-item {\n  margin-bottom: 0.7em; }\n\nhtml.main #contact-container form label {\n  font-weight: bold;\n  font-size: 0.8em; }\n\nhtml.main #contact-container form label, html.main #contact-container form input, html.main #contact-container form textarea {\n  width: 100%; }\n\nhtml.main #contact-container form input, html.main #contact-container form textarea, html.main #contact-container form button {\n  border: none;\n  outline: none;\n  font-family: inherit;\n  font-size: 22px; }\n\nhtml.main #contact-container form input, html.main #contact-container form textarea {\n  border-bottom: 2px solid lightgray; }\n\nhtml.main #contact-container form button {\n  display: block;\n  width: 100%;\n  background-color: #3077e8;\n  color: white;\n  cursor: pointer;\n  padding: 0.8em; }\n  @media (min-width: 480px) {\n    html.main #contact-container form button {\n      width: 50%;\n      margin-left: auto;\n      margin-right: auto; } }\n  html.main #contact-container form button:hover {\n    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n    transition: background-color .25s,color .15s,box-shadow .15s,opacity .25s,filter .25s,border .15s; }\n\nhtml.main #contact-container form input {\n  line-height: 2; }\n\nhtml.main #contact-container form textarea {\n  height: 5em; }\n\nhtml.main #contact-container .social-links {\n  padding-top: 1em; }\n  html.main #contact-container .social-links a {\n    color: inherit;\n    text-decoration: none;\n    display: block;\n    margin-bottom: 0.3em; }\n    html.main #contact-container .social-links a .fa-facebook-official {\n      color: #3b5998; }\n    html.main #contact-container .social-links a .fa-twitter {\n      color: #4099ff; }\n\n@media (min-width: 800px) {\n  html.main #contact-container .email-form {\n    float: left;\n    margin-left: 5%;\n    width: 43%; }\n  html.main #contact-container .social-media {\n    float: right;\n    margin-right: 5%;\n    width: 43%; }\n    html.main #contact-container .social-media .social-links {\n      padding-left: 2em; } }\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/*
@@ -2568,7 +2878,7 @@ function toComment(sourceMap) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2).Buffer))
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2658,7 +2968,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2669,7 +2979,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -2693,7 +3003,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(12);
+	fixUrls = __webpack_require__(13);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -2946,7 +3256,7 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 
@@ -3015,14 +3325,14 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(46);
+module.exports = __webpack_require__(47);
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3049,7 +3359,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /*!
@@ -3171,7 +3481,7 @@ AssertionError.prototype.toJSON = function (stack) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 /*!
@@ -3197,7 +3507,7 @@ module.exports = function (obj, args) {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 /*!
@@ -3225,7 +3535,7 @@ module.exports = function (func) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -3234,7 +3544,7 @@ module.exports = function (func) {
  * MIT Licensed
  */
 
-var hasProperty = __webpack_require__(19);
+var hasProperty = __webpack_require__(20);
 
 /**
  * ### .getPathInfo(path, object)
@@ -3342,7 +3652,7 @@ function _getPathValue (parsed, obj, index) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -3351,7 +3661,7 @@ function _getPathValue (parsed, obj, index) {
  * MIT Licensed
  */
 
-var type = __webpack_require__(13);
+var type = __webpack_require__(14);
 
 /**
  * ### .hasProperty(object, name)
@@ -3412,7 +3722,7 @@ module.exports = function hasProperty(name, obj) {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -3425,7 +3735,7 @@ module.exports = function hasProperty(name, obj) {
  * Module dependancies
  */
 
-var inspect = __webpack_require__(6);
+var inspect = __webpack_require__(7);
 var config = __webpack_require__(1);
 
 /**
@@ -3468,7 +3778,7 @@ module.exports = function (obj) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 /*!
@@ -3519,14 +3829,14 @@ module.exports = function (assertion, object, includeAll) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(23);
+module.exports = __webpack_require__(24);
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -3548,13 +3858,13 @@ exports.version = '3.5.0';
  * Assertion Error
  */
 
-exports.AssertionError = __webpack_require__(15);
+exports.AssertionError = __webpack_require__(16);
 
 /*!
  * Utils for plugins (not exported)
  */
 
-var util = __webpack_require__(37);
+var util = __webpack_require__(38);
 
 /**
  * # .use(function)
@@ -3592,40 +3902,40 @@ exports.config = config;
  * Primary `Assertion` prototype
  */
 
-var assertion = __webpack_require__(24);
+var assertion = __webpack_require__(25);
 exports.use(assertion);
 
 /*!
  * Core Assertions
  */
 
-var core = __webpack_require__(25);
+var core = __webpack_require__(26);
 exports.use(core);
 
 /*!
  * Expect interface
  */
 
-var expect = __webpack_require__(27);
+var expect = __webpack_require__(28);
 exports.use(expect);
 
 /*!
  * Should interface
  */
 
-var should = __webpack_require__(28);
+var should = __webpack_require__(29);
 exports.use(should);
 
 /*!
  * Assert interface
  */
 
-var assert = __webpack_require__(26);
+var assert = __webpack_require__(27);
 exports.use(assert);
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -3762,7 +4072,7 @@ module.exports = function (_chai, util) {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports) {
 
 /*!
@@ -5628,7 +5938,7 @@ module.exports = function (chai, _) {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports) {
 
 /*!
@@ -7279,7 +7589,7 @@ module.exports = function (chai, util) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports) {
 
 /*!
@@ -7319,7 +7629,7 @@ module.exports = function (chai, util) {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports) {
 
 /*!
@@ -7526,7 +7836,7 @@ module.exports = function (chai, util) {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7539,7 +7849,7 @@ module.exports = function (chai, util) {
  * Module dependencies
  */
 
-var transferFlags = __webpack_require__(21);
+var transferFlags = __webpack_require__(22);
 var flag = __webpack_require__(0);
 var config = __webpack_require__(1);
 
@@ -7644,7 +7954,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7694,7 +8004,7 @@ module.exports = function (ctx, name, method) {
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7748,7 +8058,7 @@ module.exports = function (ctx, name, getter) {
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7771,9 +8081,9 @@ module.exports = function (ctx, name, getter) {
  * @api public
  */
 
-var AssertionError = __webpack_require__(15);
+var AssertionError = __webpack_require__(16);
 var flag = __webpack_require__(0);
-var type = __webpack_require__(13);
+var type = __webpack_require__(14);
 
 module.exports = function (obj, types) {
   var obj = flag(obj, 'object');
@@ -7796,7 +8106,7 @@ module.exports = function (obj, types) {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports) {
 
 /*!
@@ -7828,7 +8138,7 @@ module.exports = function getEnumerableProperties(object) {
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7842,9 +8152,9 @@ module.exports = function getEnumerableProperties(object) {
  */
 
 var flag = __webpack_require__(0)
-  , getActual = __webpack_require__(16)
-  , inspect = __webpack_require__(6)
-  , objDisplay = __webpack_require__(20);
+  , getActual = __webpack_require__(17)
+  , inspect = __webpack_require__(7)
+  , objDisplay = __webpack_require__(21);
 
 /**
  * ### .getMessage(object, message, negateMessage)
@@ -7885,7 +8195,7 @@ module.exports = function (obj, args) {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7895,7 +8205,7 @@ module.exports = function (obj, args) {
  * MIT Licensed
  */
 
-var getPathInfo = __webpack_require__(18);
+var getPathInfo = __webpack_require__(19);
 
 /**
  * ### .getPathValue(path, object)
@@ -7934,7 +8244,7 @@ module.exports = function(path, obj) {
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports) {
 
 /*!
@@ -7976,7 +8286,7 @@ module.exports = function getProperties(object) {
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -7995,42 +8305,42 @@ var exports = module.exports = {};
  * test utility
  */
 
-exports.test = __webpack_require__(41);
+exports.test = __webpack_require__(42);
 
 /*!
  * type utility
  */
 
-exports.type = __webpack_require__(13);
+exports.type = __webpack_require__(14);
 
 /*!
  * expectTypes utility
  */
-exports.expectTypes = __webpack_require__(32);
+exports.expectTypes = __webpack_require__(33);
 
 /*!
  * message utility
  */
 
-exports.getMessage = __webpack_require__(34);
+exports.getMessage = __webpack_require__(35);
 
 /*!
  * actual utility
  */
 
-exports.getActual = __webpack_require__(16);
+exports.getActual = __webpack_require__(17);
 
 /*!
  * Inspect util
  */
 
-exports.inspect = __webpack_require__(6);
+exports.inspect = __webpack_require__(7);
 
 /*!
  * Object Display util
  */
 
-exports.objDisplay = __webpack_require__(20);
+exports.objDisplay = __webpack_require__(21);
 
 /*!
  * Flag utility
@@ -8042,77 +8352,77 @@ exports.flag = __webpack_require__(0);
  * Flag transferring utility
  */
 
-exports.transferFlags = __webpack_require__(21);
+exports.transferFlags = __webpack_require__(22);
 
 /*!
  * Deep equal utility
  */
 
-exports.eql = __webpack_require__(42);
+exports.eql = __webpack_require__(43);
 
 /*!
  * Deep path value
  */
 
-exports.getPathValue = __webpack_require__(35);
+exports.getPathValue = __webpack_require__(36);
 
 /*!
  * Deep path info
  */
 
-exports.getPathInfo = __webpack_require__(18);
+exports.getPathInfo = __webpack_require__(19);
 
 /*!
  * Check if a property exists
  */
 
-exports.hasProperty = __webpack_require__(19);
+exports.hasProperty = __webpack_require__(20);
 
 /*!
  * Function name
  */
 
-exports.getName = __webpack_require__(17);
+exports.getName = __webpack_require__(18);
 
 /*!
  * add Property
  */
 
-exports.addProperty = __webpack_require__(31);
+exports.addProperty = __webpack_require__(32);
 
 /*!
  * add Method
  */
 
-exports.addMethod = __webpack_require__(30);
+exports.addMethod = __webpack_require__(31);
 
 /*!
  * overwrite Property
  */
 
-exports.overwriteProperty = __webpack_require__(40);
+exports.overwriteProperty = __webpack_require__(41);
 
 /*!
  * overwrite Method
  */
 
-exports.overwriteMethod = __webpack_require__(39);
+exports.overwriteMethod = __webpack_require__(40);
 
 /*!
  * Add a chainable method
  */
 
-exports.addChainableMethod = __webpack_require__(29);
+exports.addChainableMethod = __webpack_require__(30);
 
 /*!
  * Overwrite chainable method
  */
 
-exports.overwriteChainableMethod = __webpack_require__(38);
+exports.overwriteChainableMethod = __webpack_require__(39);
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports) {
 
 /*!
@@ -8172,7 +8482,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports) {
 
 /*!
@@ -8230,7 +8540,7 @@ module.exports = function (ctx, name, method) {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports) {
 
 /*!
@@ -8291,7 +8601,7 @@ module.exports = function (ctx, name, getter) {
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -8325,14 +8635,14 @@ module.exports = function (obj, args) {
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(43);
+module.exports = __webpack_require__(44);
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -8345,7 +8655,7 @@ module.exports = __webpack_require__(43);
  * Module dependencies
  */
 
-var type = __webpack_require__(44);
+var type = __webpack_require__(45);
 
 /*!
  * Buffer.isBuffer browser shim
@@ -8595,14 +8905,14 @@ function objectEqual(a, b, m) {
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(45);
+module.exports = __webpack_require__(46);
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports) {
 
 /*!
@@ -8750,7 +9060,7 @@ Library.prototype.test = function (obj, type) {
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports) {
 
 /*!
@@ -8890,13 +9200,13 @@ Library.prototype.test = function(obj, type) {
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_main_js__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_chai__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_main_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_chai__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_chai___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_chai__);
 
 
