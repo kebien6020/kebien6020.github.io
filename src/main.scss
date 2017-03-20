@@ -45,6 +45,9 @@ nav {
       float: right;
     }
     a {
+      @include desktop {
+        padding-left: 1em;
+      }
       flex: 1;
       justify-content: center;
       text-align: center;
