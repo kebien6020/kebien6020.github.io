@@ -7,6 +7,7 @@
 html.main {
 
 $header-height: 111px;
+$desktop-header-height: 61px;
 $font-size: 22px;
 
 * {
@@ -31,9 +32,18 @@ nav {
     text-align: center;
     color: white;
     font-size: $font-size * 2;
+    @include desktop {
+      float: left;
+      width: auto;
+      font-size: $font-size * 1.5;
+    }
   }
   .navlinks {
     display: flex;
+    @include desktop {
+      display: block;
+      float: right;
+    }
     a {
       flex: 1;
       justify-content: center;
@@ -58,11 +68,17 @@ nav {
   display: block;
   position: relative;
   top: -($header-height + $font-size);
+  @include desktop {
+    top: -($desktop-header-height + $font-size);
+  }
   visibility: hidden;
 }
 
 main {
-  padding-top: 111px;
+  padding-top: $header-height;
+  @include desktop {
+    padding-top: $desktop-header-height;
+  }
 }
 
 section > * {
