@@ -144,7 +144,6 @@ section {
 
 #about-container {
   background-color: $theme-dark-blue;
-
   color: white;
   p {
     font-family: 'Ubuntu', sans-serif;
@@ -168,6 +167,30 @@ section {
     @include center-block;
     @include tablet {
       width: 40%;
+    }
+  }
+  @include desktop {
+    @include clearfix;
+    .text {
+      float: left;
+      width: 45%;
+      margin-left: 5%;
+    }
+    hr {
+      display: inline-block;
+      width: 1px;
+      height: 300px;
+      margin: 0;
+      margin-left: 2.5%;
+    }
+    position: relative;
+    img {
+      height: 70%;
+      width: auto;
+      position: absolute;
+      top: 50%;
+      right: (45% / 2);
+      transform: translateY(-50%) translateX(50%);
     }
   }
 }
@@ -243,6 +266,21 @@ section {
       }
       .fa-twitter {
         color: $twitter-blue;
+      }
+    }
+  }
+  @include desktop {
+    .email-form {
+      float: left;
+      margin-left: 5%;
+      width: 50% - 5% - 2%;
+    }
+    .social-media {
+      float: right;
+      margin-right: 5%;
+      width: 50% - 5% - 2%;
+      .social-links {
+        padding-left: 2em;
       }
     }
   }
