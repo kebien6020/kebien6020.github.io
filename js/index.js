@@ -2205,30 +2205,61 @@ __WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill___default.a.polyfill();
 // # Smooth scrolling
 
 const $navlinks = document.querySelectorAll('.navlinks a');
-const getHash = url => url.match(/#(.*)$/)[1];
-const scrollTo = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+/* harmony export (immutable) */ __webpack_exports__["$navlinks"] = $navlinks;
 
-// The page has just loaded, go to the according section
-// as per the hash after a second
-setTimeout(() => {
+
+const getHash = url => url.match(/#(.*)$/)[1];
+/* harmony export (immutable) */ __webpack_exports__["getHash"] = getHash;
+
+
+const scrollTo = id => {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+};
+/* harmony export (immutable) */ __webpack_exports__["scrollTo"] = scrollTo;
+
+
+const updateHash = hash => {
+  window.location.hash = '#' + hash;
+};
+/* harmony export (immutable) */ __webpack_exports__["updateHash"] = updateHash;
+
+
+const handleNavlinkClick = event => {
+  const $navlink = event.target;
+  // Prevent the default instant scroll
+  event.preventDefault();
+  const targetId = getHash($navlink.href);
+  // Scroll smoothly to target
+  scrollTo(targetId);
+  // Update the hash like the default action
+  updateHash(targetId);
+};
+/* harmony export (immutable) */ __webpack_exports__["handleNavlinkClick"] = handleNavlinkClick;
+
+
+const scrollToHash = () => {
   if (location.hash !== '') {
     const targetId = getHash(location.hash);
     scrollTo(targetId);
   }
-}, 1000);
+};
+/* harmony export (immutable) */ __webpack_exports__["scrollToHash"] = scrollToHash;
 
-// Override the onclick for each navlink
-$navlinks.forEach($navlink => {
-  $navlink.addEventListener('click', event => {
-    // Prevent the default instant scroll
-    event.preventDefault();
-    const targetId = getHash($navlink.href);
-    // Scroll smoothly to target
-    scrollTo(targetId);
-    // Update the hash like the default action
-    location.hash = '#' + targetId;
+
+const init = () => {
+  // The page has just loaded, go to the according section
+  // as per the hash after a second
+  setTimeout(scrollToHash, 1000);
+
+  // Override the onclick for each navlink
+  $navlinks.forEach($navlink => {
+    $navlink.addEventListener('click', handleNavlinkClick);
   });
-});
+};
+/* harmony export (immutable) */ __webpack_exports__["init"] = init;
+
+
+init();
 
 /***/ }),
 /* 6 */

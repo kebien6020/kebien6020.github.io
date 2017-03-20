@@ -2303,30 +2303,61 @@ __WEBPACK_IMPORTED_MODULE_1_smoothscroll_polyfill___default.a.polyfill();
 // # Smooth scrolling
 
 const $navlinks = document.querySelectorAll('.navlinks a');
-const getHash = url => url.match(/#(.*)$/)[1];
-const scrollTo = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+/* harmony export (immutable) */ __webpack_exports__["$navlinks"] = $navlinks;
 
-// The page has just loaded, go to the according section
-// as per the hash after a second
-setTimeout(() => {
+
+const getHash = url => url.match(/#(.*)$/)[1];
+/* harmony export (immutable) */ __webpack_exports__["getHash"] = getHash;
+
+
+const scrollTo = id => {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+};
+/* harmony export (immutable) */ __webpack_exports__["scrollTo"] = scrollTo;
+
+
+const updateHash = hash => {
+  window.location.hash = '#' + hash;
+};
+/* harmony export (immutable) */ __webpack_exports__["updateHash"] = updateHash;
+
+
+const handleNavlinkClick = event => {
+  const $navlink = event.target;
+  // Prevent the default instant scroll
+  event.preventDefault();
+  const targetId = getHash($navlink.href);
+  // Scroll smoothly to target
+  scrollTo(targetId);
+  // Update the hash like the default action
+  updateHash(targetId);
+};
+/* harmony export (immutable) */ __webpack_exports__["handleNavlinkClick"] = handleNavlinkClick;
+
+
+const scrollToHash = () => {
   if (location.hash !== '') {
     const targetId = getHash(location.hash);
     scrollTo(targetId);
   }
-}, 1000);
+};
+/* harmony export (immutable) */ __webpack_exports__["scrollToHash"] = scrollToHash;
 
-// Override the onclick for each navlink
-$navlinks.forEach($navlink => {
-  $navlink.addEventListener('click', event => {
-    // Prevent the default instant scroll
-    event.preventDefault();
-    const targetId = getHash($navlink.href);
-    // Scroll smoothly to target
-    scrollTo(targetId);
-    // Update the hash like the default action
-    location.hash = '#' + targetId;
+
+const init = () => {
+  // The page has just loaded, go to the according section
+  // as per the hash after a second
+  setTimeout(scrollToHash, 1000);
+
+  // Override the onclick for each navlink
+  $navlinks.forEach($navlink => {
+    $navlink.addEventListener('click', handleNavlinkClick);
   });
-});
+};
+/* harmony export (immutable) */ __webpack_exports__["init"] = init;
+
+
+init();
 
 /***/ }),
 /* 6 */
@@ -9220,17 +9251,45 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_chai___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_chai__);
 
 
+
 __WEBPACK_IMPORTED_MODULE_1_chai___default.a.should();
+
+// Utility functions
+const shouldBeElement = val => val.should.be.instanceof(Element);
+const isArrayLike = item => Array.isArray(item) || Boolean(item) && typeof item === 'object' && typeof item.length === 'number' && (item.length === 0 || item.length > 0 && item.length - 1 in item);
+const toArray = arrayLike => Array.prototype.slice.call(arrayLike);
 
 describe('test suite', () => {
   it('works', () => {
     'Test suite is working'.should.equals('Test suite is working');
   });
   it('can access browser\'s code', () => {
-    __WEBPACK_IMPORTED_MODULE_0__src_main_js__["default"].should.be.a('function');
+    __WEBPACK_IMPORTED_MODULE_0__src_main_js__["init"].should.be.a('function');
   });
-  it('main returns "Hello world!"', () => {
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["default"])().should.equals('Hello world!');
+});
+describe('$navlinks', () => {
+  it('is a NodeList of elements', () => {
+    isArrayLike(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["$navlinks"]).should.be.ok;
+    __WEBPACK_IMPORTED_MODULE_0__src_main_js__["$navlinks"].should.be.instanceof(NodeList);
+    toArray(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["$navlinks"]).every(shouldBeElement);
+  });
+});
+describe('getHash', () => {
+  it('gets the hash from an url', () => {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["getHash"])('http://example.com/#thehash').should.equals('thehash');
+  });
+  it('works for relatives urls', () => {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["getHash"])('img/image.png#otherhash').should.equals('otherhash');
+  });
+});
+describe('updateHash', () => {
+  it('updates the hash on the url', () => {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["updateHash"])('newhash');
+    window.location.hash.should.equals('#newhash');
+  });
+  it('can remove the hash', () => {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_main_js__["updateHash"])('');
+    window.location.hash.should.equals('');
   });
 });
 
