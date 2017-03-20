@@ -1,3 +1,6 @@
 $theme-blue: #3077e8;
 $theme-dark-blue: darken($theme-blue, 20%);
-$theme-light-blue: #16afe5;
+$theme-light-blue: lighten($theme-blue, 35%);
+
+$facebook-blue: #3b5998;
+$twitter-blue: #4099ff;
