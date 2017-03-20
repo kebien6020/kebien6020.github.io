@@ -1901,12 +1901,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__main_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__main_scss__);
 
 
-const main = () => 'Hello world!';
-
-console.log(main());
-
-/* harmony default export */ __webpack_exports__["default"] = main;
-
 /***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -2035,10 +2029,11 @@ function fromByteArray (uint8) {
 
 exports = module.exports = __webpack_require__(8)(undefined);
 // imports
-
+exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Roboto|Lato);", ""]);
+exports.push([module.i, "@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css);", ""]);
 
 // module
-exports.push([module.i, "html.main * {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box; }\n\nhtml.main body {\n  font-size: 22px;\n  font-family: \"Open Sans\", sans-serif; }\n\nhtml.main h1.hello {\n  font-size: 2em;\n  position: relative;\n  top: calc(50vh - 1em);\n  text-align: center;\n  font-weight: 100;\n  color: rgba(0, 0, 0, 0.7); }\n", ""]);
+exports.push([module.i, "html.main * {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box; }\n\nhtml.main body {\n  font-size: 22px;\n  font-family: 'Lato', sans-serif; }\n\nhtml.main .anchor {\n  display: block;\n  position: relative;\n  top: -117px;\n  visibility: hidden; }\n\nhtml.main nav {\n  padding: 0.5em;\n  background-color: #3077e8;\n  position: fixed;\n  width: 100%;\n  z-index: 9; }\n  html.main nav:after {\n    content: \"\";\n    display: table;\n    clear: both; }\n  html.main nav h1 {\n    text-align: center;\n    color: white;\n    font-size: 44px; }\n  html.main nav .navlinks {\n    display: flex; }\n    html.main nav .navlinks a {\n      flex: 1;\n      justify-content: center;\n      text-align: center;\n      float: left;\n      display: block;\n      padding: 0.3em;\n      color: white;\n      text-decoration: none; }\n      html.main nav .navlinks a:first-child {\n        padding-left: 0; }\n      html.main nav .navlinks a:hover {\n        border-bottom: 3px solid white;\n        margin-bottom: -3px; }\n\nhtml.main main {\n  padding-top: 117px; }\n\nhtml.main section > * {\n  width: 90%;\n  margin-left: auto;\n  margin-right: auto; }\n\nhtml.main section {\n  padding-top: 1em;\n  padding-bottom: 1em; }\n  html.main section h2 {\n    text-align: center;\n    padding-bottom: 0.7em; }\n\nhtml.main #projects-container .project-blocks {\n  padding-top: 1em; }\n  html.main #projects-container .project-blocks:after {\n    content: \"\";\n    display: table;\n    clear: both; }\n\nhtml.main #projects-container .project {\n  margin-left: auto;\n  margin-right: auto;\n  width: 80%; }\n  html.main #projects-container .project h3 {\n    text-align: center; }\n  html.main #projects-container .project a {\n    display: block;\n    text-align: left;\n    color: inherit;\n    text-decoration: none; }\n  html.main #projects-container .project .img-container {\n    position: relative; }\n    html.main #projects-container .project .img-container img {\n      width: 100%;\n      border-radius: 5px; }\n    html.main #projects-container .project .img-container .overlay {\n      display: block;\n      position: absolute;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      border-radius: 5px;\n      box-shadow: inset 2px 2px 15px 0 #000000; }\n      html.main #projects-container .project .img-container .overlay .live {\n        display: none;\n        margin: 0 auto;\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        transform: translateX(-50%) translateY(-50%); }\n      html.main #projects-container .project .img-container .overlay:hover {\n        background-color: rgba(0, 0, 0, 0.3); }\n        html.main #projects-container .project .img-container .overlay:hover .live {\n          display: block; }\n\nhtml.main #about-container {\n  background-color: #aaa;\n  color: white; }\n  html.main #about-container p {\n    font-family: 'Ubuntu', sans-serif; }\n    html.main #about-container p:not(:last-child) {\n      margin-bottom: 1em; }\n  html.main #about-container hr {\n    border-bottom-width: 3px;\n    border-top: none;\n    margin-top: 1em;\n    margin-bottom: 1em;\n    width: 50%; }\n  html.main #about-container img {\n    border-radius: 50%;\n    width: 60%;\n    display: block;\n    margin-left: auto;\n    margin-right: auto; }\n", ""]);
 
 // exports
 
