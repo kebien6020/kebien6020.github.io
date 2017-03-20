@@ -5,3 +5,10 @@
     clear: both;
   }
 }
+
+@mixin center-block {
+  margin: {
+    left: auto;
+    right: auto;
+  }
+}
