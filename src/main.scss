@@ -32,7 +32,6 @@ nav {
     font-size: $font-size * 2;
   }
   .navlinks {
-    // float: right;
     display: flex;
     a {
       flex: 1;
@@ -41,7 +40,6 @@ nav {
       float: left;
       display: block;
       padding: 0.3em;
-      // margin: 10px 0.2em;
       &:first-child {
         padding-left: 0;
       }
@@ -90,6 +88,18 @@ section {
   .project {
     @include center-block;
     width: 80%;
+    @include tablet {
+      float: left;
+      width: 48%;
+      margin-right: 2%;
+      .img-container {
+        min-height: 130px;
+        background-color: white;
+      }
+      h3 {
+        min-height: 2.5em;
+      }
+    }
     h3 {
       text-align: center;
     }
@@ -133,7 +143,6 @@ section {
 }
 
 #about-container {
-  // background-color: #aaa;
   background-color: $theme-dark-blue;
 
   color: white;
@@ -157,6 +166,9 @@ section {
     width: 60%;
     display: block;
     @include center-block;
+    @include tablet {
+      width: 40%;
+    }
   }
 }
 
@@ -198,7 +210,12 @@ section {
     }
 
     button {
+      display: block;
       width: 100%;
+      @include tablet {
+        width: 50%;
+        @include center-block;
+      }
       background-color: $theme-blue;
       color: white;
       cursor: pointer;
