@@ -6,6 +6,17 @@ smoothScroll.polyfill()
 
 const $navlinks = document.querySelectorAll('.navlinks a')
 const getHash = url => url.match(/#(.*)$/)[1]
+const scrollTo = id =>
+  document.getElementById(id).scrollIntoView({behavior: 'smooth'})
+
+// The page has just loaded, go to the according section
+// as per the hash after a second
+setTimeout(() => {
+  if (location.hash !== '') {
+    const targetId = getHash(location.hash)
+    scrollTo(targetId)
+  }
+}, 1000)
 
 // Override the onclick for each navlink
 $navlinks.forEach($navlink => {
@@ -13,9 +24,9 @@ $navlinks.forEach($navlink => {
     // Prevent the default instant scroll
     event.preventDefault()
     const targetId = getHash($navlink.href)
-    // Get the intended target
-    const $target = document.getElementById(targetId)
-    // Scroll smoothly
-    $target.scrollIntoView({ behavior: 'smooth' })
+    // Scroll smoothly to target
+    scrollTo(targetId)
+    // Update the hash like the default action
+    location.hash = '#' + targetId
   })
 })
