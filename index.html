@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+  <title>Kevin's Portfolio</title>
 </head>
 <body>
 
@@ -16,14 +16,21 @@
   </div>
 </nav>
 
-<section id="projects">
+<main>
+<section id="projects-container">
+  <a class="anchor" id="projects"></a>
   <h2>My Projects</h2>
   <p>Here are some of the projects I've done.</p>
   <div class="project-blocks">
     <div class="project">
       <h3>Wikipedia Viewer</h3>
-      <a href="../wikipedia-viewer">
-        <img src="" alt="thumbnail">
+      <a href="../wikipedia-viewer" target="_blank">
+        <div class="img-container">
+          <img src="img/wikipedia-viewer.png" alt="Thumbnail">
+          <div class="overlay">
+            <div class="live"><i class="fa fa-cogs"></i> See it live</div>
+          </div>
+        </div>
         <div class="project-description">
           A simple Wikipedia search utility.
         </div>
@@ -31,8 +38,13 @@
     </div>
     <div class="project">
       <h3>Random Quote Machine</h3>
-      <a href="../quote-machine">
-        <img src="" alt="Thumbnail">
+      <a href="../quote-machine" target="_blank">
+        <div class="img-container">
+          <img src="img/quote-machine.png" alt="Thumbnail">
+          <div class="overlay">
+            <div class="live"><i class="fa fa-cogs"></i> See it live</div>
+          </div>
+        </div>
         <div class="project-description">
           A quote generator hitting the quotesondesign.com API. It shows a random quote about design.
         </div>
@@ -41,15 +53,22 @@
   </div>
 </section>
 
-<section id="about">
+<section id="about-container">
+  <a class="anchor" id="about"></a>
   <h2>About Me</h2>
+  <!-- TODO: Put a cooler picture -->
   <p>
-    I am a developer currently doing the FreeCodeCamp course. I'm passionate about programming and try to make all of my projects as user friendly as I possibly can. I always make a note on seeing the project I'm working on with as much criticism as the ones I use on a daily basis.
+    I am a developer currently doing the FreeCodeCamp course. I'm passionate about programming and try to make all of my projects as user friendly as I possibly can.
   </p>
-  <img src="" alt="Kevin's picture">
+  <p>
+    I always make a note on seeing the project I'm working on with as much criticism as the ones I use on a daily basis.
+  </p>
+  <hr>
+  <img src="img/kevin.jpg" alt="Kevin's picture">
 </section>
 
-<section id="contact">
+<section id="contact-container">
+  <a class="anchor" id="contact"></a>
   <h2>Reach to me</h2>
   <div class="email-form">
     <h3>Send me an email...</h3>
@@ -78,12 +97,12 @@
   <div class="social-media">
     <h3>...or find me in the social media</h3>
     <div class="social-links">
-      <a href="#" class="facebook"></a>
-      <a href="#" class="twitter"></a>
+      <a href="#" class="facebook"><i class="fa fa-facebook"></i></a>
+      <a href="#" class="twitter"><i class="fa fa-twitter"></i></a>
     </div>
   </div>
 </section>
-
+</main>
 
 <script src="js/index.js" charset="utf-8"></script>
 </body>
