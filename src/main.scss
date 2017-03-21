@@ -21,6 +21,15 @@ body {
   font-family: 'Lato', sans-serif;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+  font-weight: bold;
+  &:hover {
+    color: $theme-blue;
+  }
+}
+
 nav {
   @include clearfix;
   padding: 0.5em;
@@ -46,7 +55,7 @@ nav {
     }
     a {
       @include desktop {
-        padding-left: 1em;
+        margin-left: 1em;
       }
       flex: 1;
       justify-content: center;
@@ -103,6 +112,9 @@ section {
     padding-top: 1em;
     @include clearfix;
   }
+  p:last-child {
+    margin-top: 1.3em;
+  }
 
   .project {
     @include center-block;
@@ -122,11 +134,11 @@ section {
     h3 {
       text-align: center;
     }
+
     a {
       display: block;
       text-align: left;
-      color: inherit;
-      text-decoration: none;
+      font-weight: normal;
     }
     .img-container {
       img {
@@ -149,6 +161,7 @@ section {
           top: 50%;
           left: 50%;
           transform: translateX(-50%) translateY(-50%);
+          color: black;
         }
         &:hover {
           background-color: rgba(0,0,0,0.3);
@@ -220,14 +233,6 @@ section {
       top: 1em;
       bottom: 1em;
     }
-    a {
-      text-decoration: none;
-      color: inherit;
-      font-weight: bold;
-      &:hover {
-        color: $theme-blue;
-      }
-    }
   }
   form {
     .form-item {
@@ -277,7 +282,6 @@ section {
   .social-links {
     padding-top: 1em;
     a {
-      @include reset-link;
       display: block;
       margin-bottom: 0.3em;
       .fa-facebook-official {
@@ -285,6 +289,9 @@ section {
       }
       .fa-twitter {
         color: $twitter-blue;
+      }
+      .fa-free-code-camp {
+        color: $free-code-camp-green;
       }
     }
   }
